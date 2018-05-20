@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href='/stylesheets/index.css'>
+    <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+</head>
+<body>
+    <div id="scratch-loader"></div>
+    <div id="scratch" style="text-align:center;margin-top:30px;visibility:hidden;position:relative;">
+        <div class="scratch_unsupported" style="display: none;">
+            <p style="color:#aaa;font-size:22px;margin-top:14px;line-height:28px;">
+                Oh no! We're having trouble displaying this Scratch project.<br/>
+                If you are on a mobile phone or tablet, try visiting this project on a computer.<br/>
+                If you're on a computer, your Flash player might be disabled, missing, or out of date. Visit <a href="https://get.adobe.com/flashplayer/">this page</a> to update Flash.<br/>
+            </p>
+        </div>
+        <div class="scratch_loading">Loading...</div>
+    </div>
+    <div id='list'>
+        <div id="headList"></div>
+        <div id="contentList">
+            <div class="panel-group" id="accordion">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" class="listTitle">文件列表</a>
+                        </h4>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse in"></div>
+                </div>
+            </div>
+            <div class="form">
+                <div class="form-group">
+                    <button  class="btn" id="upBtn" onclick="uploadTemp()">上传文件</button>
+                    <button  class="btn" id="dowBtn" onclick="downloadTemp()">下载文件</button>
+                </div>
+                <div class="form-group">
+                    <button  class="btn" id="deBtn" onclick="deleteFn()">删除文件</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="uploadModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title">上传文件</h4>
+                </div>
+                <div class="modal-body" id="inputBlockUpload">
+                    <input class="form-control" type="text" id="uploadDataName" placeholder="请输入要上传的文件名">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" onclick="uploadTemp()" class="btn btn-primary">
+                        确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="downModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">下载文件</h4>
+                </div>
+                <div class="modal-body" id="inputBlockDownload">
+                    <input class="form-control" type="text" id="downloadDataName" placeholder="请输入要下载的文件名">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button onclick="downloadTemp()" type="button" class="btn btn-primary">
+                        确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="deletModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" >
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">删除文件</h4>
+                </div>
+                <div class="modal-body" id="inputBlockDelete">
+                    <input class="form-control" type="text" id="deleteDataName" placeholder="请输入要删除的文件名">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button  onclick="deleteFn()" type="button" class="btn btn-primary" id="delModBtn">
+                        确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="/javascripts/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="/javascripts/bowser.min.js"></script>
+    <script type="text/javascript" src="/javascripts/swfobject.js"></script>
+    <script type="text/javascript" src='/javascripts/rightList.js'></script>
+    <script type="text/javascript" src='/javascripts/DataConnection.js'></script>
+    <script src="/javascripts/bootstrap.min.js"></script>
+<script type="text/javascript">
+    window.SWFready=$.Deferred(); // Deferred makes sure we don't call ASSetEditMode before SWF is ready.
+    function JSeditorReady() {
+        try {
+            SWFready.resolve();
+            return true;
+        } catch (error) {
+            console.error(error.message, "\n", error.stack);
+            throw error;
+        }
+    }  
+    function handleEmbedStatus(e) {
+    $('#scratch-loader').hide();
+        if(!e.success) {
+            $('#scratch').css('marginTop', '10');
+            $('#scratch DIV.scratch_unsupported').show();
+            $('#scratch DIV.scratch_loading').hide();
+        }else{
+            $('#scratch').css('visibility', 'visible');
+        }
+    }
+    var flashvars = {
+        autostart:'false',
+        inIE: (navigator.userAgent.indexOf('MSIE') > -1),
+        extensionDevMode:'true',
+    };
+    $.each(flashvars, function(prop, val) {
+        if($.isPlainObject(val))
+            flashvars[prop] = encodeURIComponent(JSON.stringify(val));
+    });  
+    var params = {
+        allowscriptaccess: 'always',
+        allowfullscreen: 'true',
+        wmode: 'direct',
+        menu: 'false',
+    };  
+    for (var i in flashvars) {
+        if (typeof params.flashvars !== 'undefined') {
+            params.flashvars += '&' + i + '=' +flashvars[i];
+        } else {
+            params.flashvars = i + '=' + flashvars[i];
+        }
+    }
+    var swfFile = (swfobject.hasFlashPlayerVersion('11.7.0') ? 'Scratch.swf' : 'ScratchFor10.2.swf');
+    var swfAtt = {
+        data:  "http://localhost:8000/" + swfFile,
+        width: "80%",
+        height: "100%"
+    };
+    swfobject.addDomLoadEvent(function() {
+    // check if mobile/tablet browser user bowser
+        if(bowser.mobile || (bowser.tablet && typeof bowser.msie === 'undefined')) {
+            // if on mobile, show error screen
+            handleEmbedStatus({success: false});
+        } else {
+            // if not on ie, let browser try to handle flash loading
+            var swf = swfobject.createSWF(swfAtt, params, "scratch");
+            handleEmbedStatus({success: true, ref: swf}); 
+        }
+        document.getElementById('scratch').style.visibility = 'visible';
+    });
+    function JSthrowError(e) {
+        if (window.onerror) window.onerror(e, 'swf', 0);
+        else console.error(e);
+    }
+</script>
+</body>
+</html>
